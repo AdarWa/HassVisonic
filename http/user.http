@@ -1,0 +1,8 @@
+POST https://visonic.tycomonitor.com/rest_api/13.0/auth
+Content-Type: application/json
+
+{
+    "email": "<EXAMPLE_EMAIL>",
+    "password": "<EXAMPLE_PASSWORD>",
+    "app_id": "aa63eef7-a5a0-4490-8b79-65e840235342"
+}

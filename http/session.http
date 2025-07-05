@@ -1,0 +1,10 @@
+POST https://visonic.tycomonitor.com/rest_api/13.0/panel/login
+User-Token: <EXAMPLE_USER>
+Content-Type: application/json
+
+{
+    "user_code": "1937",
+    "app_type": "com.visonic.powermaxapp",
+    "app_id": "<EXAMPLE_APP_ID>",
+    "panel_serial": "29DFCE"
+}

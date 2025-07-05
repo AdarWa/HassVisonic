@@ -1,0 +1,8 @@
+update:
+  description: Update the system
+trigger_siren:
+  description: Trigger the siren
+mute_siren:
+  description: Mute the siren
+continue_action:
+  description: Continue the queued action

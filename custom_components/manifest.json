@@ -1,0 +1,8 @@
+{
+    "domain":"visonic_hass",
+    "name":"Visonic Integration",
+    "requirements":["requests","retrying"],
+    "iot_class":"local_polling",
+    "version": "1.0.0",
+    "config_flow": true
+}

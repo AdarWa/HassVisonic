@@ -1,0 +1,4 @@
+get https://visonic.tycomonitor.com/rest_api/13.0/status
+Content-Type: application/json
+User-Token: <EXAMPLE_USER>
+Session-Token: <EXAMPLE_SESSION>
