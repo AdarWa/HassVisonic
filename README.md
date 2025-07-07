@@ -137,6 +137,10 @@ Use these events to build automations, notify users, or log activity.
 
 The integration provides an `alarm.ready` state attribute, which indicates whether the alarm system is ready to be armed. When `alarm.ready` is `True`, all sensors are in a secure state and the system can be armed. If `alarm.ready` is `False`, one or more sensors may be open, bypassed, or in a fault state, preventing arming until resolved.
 
+### Arming Home/Away State
+
+The current `alarm_control_panel` that Home Assistant provides doesn't support the specified arming state(Arming Away/Home), and instead it shows `Arming`. In order to access the type of arming, please use the `alarm.changeable_state` entity, which provides the data directly from the REST integration and optionally using also the RS232-to-TCP module(see [Optional: RS232-to-TCP Support](#optional-rs232-to-tcp-support)).
+
 ---
 
 ## Contributions

@@ -43,6 +43,7 @@ def setup_alarm_sensor_platform(
                             state, rapid = state_tuple
                             if state:
                                 sensor.update_state(state)
+                                hass.states.set("alarm.changeable_state", state)
                             if rapid is not None:
                                 hass.states.set("visonic.rapid_sensor", rapid)
                                 hass.bus.fire(SIGNAL_ALARM_UPDATE, {})
