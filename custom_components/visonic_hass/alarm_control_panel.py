@@ -5,6 +5,7 @@ from .const import DOMAIN
 import hashlib
 import logging
 from threading import Timer
+import time
 
 class VisonicPanel(AlarmControlPanelEntity):
     _attr_name = "Visonic Panel"
@@ -22,12 +23,14 @@ class VisonicPanel(AlarmControlPanelEntity):
     
     async def async_update(self):
         obj = self.hass.states.get("alarm.changeable_state")
+        self.logger.fatal("Updating Visonic Panel State, current state: %s", obj)
         if obj is not None:
             self.current_state = obj.state
             if self.current_state != "Armed Away":
                 self.armed_vacation = False
         else:
             self.current_state = "Unknown"
+        self.async_write_ha_state()
     
     @callback
     async def callUpdate(self, e):
@@ -37,11 +40,12 @@ class VisonicPanel(AlarmControlPanelEntity):
         async_track_state_change_event(self.hass, "alarm.changeable_state", self.callUpdate)
               
     
-    def __init__(self, _hass, _api,_secrets):
+    def __init__(self, _hass, _api,_secrets, entry_):
         self.secrets = _secrets
         self.api = _api
         self.hass = _hass
         self.logger = logging.getLogger(DOMAIN)
+        self.entry = entry_
         _hass.bus.async_listen_once("homeassistant_started", self.registerListner)
         Timer(20, self.updateStatus).start()
     
@@ -49,19 +53,37 @@ class VisonicPanel(AlarmControlPanelEntity):
         fetched = self.api.fetchState()
         if fetched is None:
             return
-        state = fetched["state"]
-        if state == "DISARM":
-            self.current_state = "Disarmed"
-        elif state == "EXIT":
-            self.current_state = "Arming Home"
-        elif state == "HOME":
-            self.current_state = "Armed Home"
-        elif state == "AWAY":
-            self.current_state = "Armed Away"
-        elif state == "ENTRY_DELAY":
-            self.current_state = "Entry Delay"
-        self.hass.states.set("alarm.changeable_state", self.current_state)
         self.hass.states.set("alarm.ready", fetched["ready"])
+        update_neccessary = True
+        last_update = self.hass.states.get("alarm.last_update_time").state
+        state = fetched["state"]
+        temp_state = None
+        if state == "DISARM":
+            temp_state = "Disarmed"
+        elif state == "EXIT":
+            temp_state = "Arming Home"
+        elif state == "HOME":
+            temp_state = "Armed Home"
+        elif state == "AWAY":
+            temp_state = "Armed Away"
+        elif state == "ENTRY_DELAY":
+            temp_state = "Entry Delay"
+
+        if last_update is not None:
+            last_update = float(last_update)
+            if time.time() - last_update < 90:
+                update_neccessary = False
+            elif self.hass.states.get("alarm.changeable_state").state != temp_state:
+                self.hass.states.set("alarm.usr_msg", "Seems like the there is a mismatch between the USR state and the Visonic REST state.")
+
+        if self.entry.data.get("uart_to_tcp", False) and\
+              self.hass.states.get("alarm.changeable_state").state is not None\
+                and not update_neccessary:
+            return
+        self.current_state = temp_state
+        self.hass.states.set("alarm.changeable_state", self.current_state)
+
+        
     
     def updateStatus(self):
         self.fetchStatus()
@@ -147,6 +169,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     if not _api:
         return
     hashes = entry.data.get("accepted_codes", [])
-    panel = VisonicPanel(hass, _api, hashes)
+    panel = VisonicPanel(hass, _api, hashes, entry)
     _api.entities.append(panel)
     async_add_entities([panel])

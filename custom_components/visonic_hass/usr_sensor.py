@@ -11,6 +11,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatche
 import socket
 import threading
 import logging
+import time
 from .parser import parseData, parseDataBlock  # Adjust path as needed
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,7 +29,14 @@ def setup_alarm_sensor_platform(
 ) -> None:
     """Set up the alarm sensor platform as part of a custom integration."""
 
+
     def socket_loop():
+        hass.states.set("alarm.changeable_state", None)
+        hass.states.set("alarm.last_update_time", None)
+        hass.states.set("visonic.rapid_sensor", None)
+        hass.states.set("alarm.usr_msg", "Waiting for connection...")
+        error = False
+        init = True
         while True:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -42,13 +50,19 @@ def setup_alarm_sensor_platform(
                         if state_tuple:
                             state, rapid = state_tuple
                             if state:
+                                if init or error:
+                                    hass.states.set("alarm.usr_msg",(hass.states.get("alarm.usr_msg") + "\n" if error else "") + "Connected!")
+                                    error = False
                                 sensor.update_state(state)
                                 hass.states.set("alarm.changeable_state", state)
+                                hass.states.set("alarm.last_update_time", time.time())
                             if rapid is not None:
                                 hass.states.set("visonic.rapid_sensor", rapid)
                                 hass.bus.fire(SIGNAL_ALARM_UPDATE, {})
             except Exception as e:
                 _LOGGER.exception("Socket loop crashed: %s", e)
+                hass.states.set("alarm.usr_msg", f"Connection error: {e}, trying to restore connection...")
+                error = True
 
     threading.Thread(target=socket_loop, daemon=True).start()
 

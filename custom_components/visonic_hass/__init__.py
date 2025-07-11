@@ -23,19 +23,19 @@ async def updateHandler(call):
                 entity.update()
             entity.schedule_update_ha_state()
     except Exception as e:
-        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e.message))
+        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e))
 
 async def triggerSirenHandler(call):
     try:
         await _api.triggerAsync()
     except Exception as e:
-        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e.message))
+        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e))
 
 async def muteSirenHandler(call):
     try:
         await _api.muteAsync()
     except Exception as e:
-        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e.message))
+        _LOGGER.fatal(type(e).__name__ + "occured while updating panel. " + str(e))
 
 async def updateLater():
     loop = asyncio.get_event_loop()
