@@ -73,6 +73,7 @@ class VisonicPanel(AlarmControlPanelEntity):
             last_update = float(last_update)
             if time.time() - last_update < 90:
                 update_neccessary = False
+                self.hass.states.set("alarm.usr_msg", "Connected!")
             elif self.hass.states.get("alarm.changeable_state").state != temp_state:
                 self.hass.states.set("alarm.usr_msg", "Seems like the there is a mismatch between the USR state and the Visonic REST state.")
 

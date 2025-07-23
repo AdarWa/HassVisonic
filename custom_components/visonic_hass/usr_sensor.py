@@ -53,6 +53,8 @@ def setup_alarm_sensor_platform(
                                 if init or error:
                                     hass.states.set("alarm.usr_msg",(hass.states.get("alarm.usr_msg") + "\n" if error else "") + "Connected!")
                                     error = False
+                                if hass.states.get("alarm.usr_msg").state == "Connected!":
+                                    error = False
                                 sensor.update_state(state)
                                 hass.states.set("alarm.changeable_state", state)
                                 hass.states.set("alarm.last_update_time", time.time())
