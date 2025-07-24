@@ -4,7 +4,7 @@ from .const import DOMAIN
 from .device import Device,DeviceType
 from .usr_sensor import AlarmSensor, setup_alarm_sensor_platform
 
-logger = logging.getLogger(DOMAIN)
+logger = logging.getLogger(__name__)
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the sensor platform."""
     global _api,sensors

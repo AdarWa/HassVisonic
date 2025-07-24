@@ -13,7 +13,7 @@ class API:
     def __init__(self, hostname):
         global tries
         tries = 0
-        self.logger = logging.getLogger(DOMAIN)
+        self.logger = logging.getLogger(__name__)
         self.hostname = hostname
         self.secrets = {
             "email": None,
@@ -27,6 +27,7 @@ class API:
             adapter = re.adapters.HTTPAdapter(pool_connections=50, pool_maxsize=50)
             self.s.mount('https://', adapter)
             self.s.headers.update({'Content-Type': 'application/json'})  
+            self.logger.debug("Initialized REST API session with hostname: %s", self.hostname)
         except Exception as e:
             self.logger.fatal("Exception occured while initializing the REST API: " + str(e.message))
         self.devices = []
@@ -34,7 +35,7 @@ class API:
     async def initAsync(self):
         await asyncio.to_thread(self.fetchVersion)
         await self.fetchDevicesAsync()
-        self.logger.fatal("Finished Connecting to Rest API!")
+        self.logger.debug("Finished Connecting to Rest API!")
         
         
     def makeUrl(self,url):
@@ -85,6 +86,7 @@ class API:
     def obtainToken(self):
         """Obtain user and session token from the API."""
         try:
+            self.logger.debug("Trying to obtain user and session tokens.")
             user = self.obtainUserToken()
             if user is None:
                 self.logger.fatal("Failed to obtain user token. Check your credentials.")
@@ -95,7 +97,7 @@ class API:
                 return None, None
             while not self.isConnected(user, session):
                 time.sleep(1)
-            self.logger.info("Successfully obtained user and session tokens.")
+            self.logger.debug("Successfully obtained user and session tokens.")
             return user, session
         except re.HTTPError as e:
             self.logger.fatal(type(e).__name__ + " HTTP Error while obtaining tokens. Error Message: " + str(e.message))
@@ -128,11 +130,13 @@ class API:
             r = self.s.get(self.makeUrl(name))
             if r.status_code == 403 and tries < 5:
                 tries+=1
+                self.logger.debug("Session expired, re-authenticating.")
                 return self.auth()
             elif r.status_code != 200:
                 self.logger.fatal("Exception while sending GET to " + self.makeUrl(name) + ". status code: " + str(r.status_code) + ". tries: " + str(tries))
+                self.logger.debug("Failed to send GET to " + name+ " API endpoint with status code " + str(r.status_code) + ". Response: " + str(r.text))
                 return None
-            
+            self.logger.debug("Successfully sent GET request to " + name + " API endpoint with status code 200. Response: " + str(r.json()))
             return r.json()
         except re.RequestException as e:
             self.logger.fatal(type(e).__name__ + " Request Exception while sending a GET request to "+ self.makeUrl(name) + ". Error Message: " + str(e))
@@ -146,11 +150,13 @@ class API:
             r = self.s.post(self.makeUrl(name), json=data)
             if r.status_code == 403 and tries < 5:
                 tries+=1
+                self.logger.debug("Session expired, re-authenticating.")
                 return self.auth()
             elif r.status_code != 200:
                 self.logger.fatal("Exception while sending POST to " + self.makeUrl(name) + ". status code: " + str(r.status_code) + ". tries: " + str(tries))
+                self.logger.debug("Failed to send POST to " + name+ " API endpoint with status code " + str(r.status_code) + ". Response: " + str(r.text))
                 return None
-            
+            self.logger.debug("Successfully sent POST request to " + name + " API endpoint with status code 200. Response: " + str(r.json()))
             return r.json()
         except re.RequestException as e:
             self.logger.fatal(type(e).__name__ + " Request Exception while sending a POST request to "+ self.makeUrl(name) + ". Error Message: " + str(e))
@@ -202,6 +208,9 @@ class API:
                         "state": "EXIT" if parts[0]["status"] == "EXIT" else parts[0]["state"],
                         "ready": parts[0]["ready"]
                     }
+                else:
+                    self.logger.fatal("No partitions found in response from status API endpoint.")
+                    return None
         except Exception as e:
             self.logger.fatal(type(e).__name__ + "occured while fetching state of panel. " + str(e.message))
     

@@ -58,8 +58,10 @@ def setup_alarm_sensor_platform(
                                 sensor.update_state(state)
                                 hass.states.set("alarm.changeable_state", state)
                                 hass.states.set("alarm.last_update_time", time.time())
+                                _LOGGER.debug("Alarm state updated through USR: %s", state)
                             if rapid is not None:
                                 hass.states.set("visonic.rapid_sensor", rapid)
+                                _LOGGER.debug("Rapid sensor state updated: %s", rapid)
                                 hass.bus.fire(SIGNAL_ALARM_UPDATE, {})
             except Exception as e:
                 _LOGGER.exception("Socket loop crashed: %s", e)
@@ -98,3 +100,4 @@ class AlarmSensor(SensorEntity):
     def update_state(self, state: str) -> None:
         """External state update from socket thread."""
         dispatcher_send(self.hass, SIGNAL_ALARM_UPDATE, state)
+        _LOGGER.debug("Sent update signal through dispatcher for alarm state: %s", state)

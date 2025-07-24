@@ -23,7 +23,7 @@ class VisonicPanel(AlarmControlPanelEntity):
     
     async def async_update(self):
         obj = self.hass.states.get("alarm.changeable_state")
-        self.logger.fatal("Updating Visonic Panel State, current state: %s", obj)
+        self.logger.debug("Updating Visonic Panel *entity* state, current state: %s", obj)
         if obj is not None:
             self.current_state = obj.state
             if self.current_state != "Armed Away":
@@ -44,14 +44,16 @@ class VisonicPanel(AlarmControlPanelEntity):
         self.secrets = _secrets
         self.api = _api
         self.hass = _hass
-        self.logger = logging.getLogger(DOMAIN)
+        self.logger = logging.getLogger(__name__)
         self.entry = entry_
         _hass.bus.async_listen_once("homeassistant_started", self.registerListner)
         Timer(20, self.updateStatus).start()
     
     def fetchStatus(self):
+        self.logger.debug("Fetching status from REST API.")
         fetched = self.api.fetchState()
         if fetched is None:
+            self.logger.fatal("Failed to fetch status from REST API, fetched is None.")
             return
         self.hass.states.set("alarm.ready", fetched["ready"])
         update_neccessary = True
@@ -80,9 +82,11 @@ class VisonicPanel(AlarmControlPanelEntity):
         if self.entry.data.get("uart_to_tcp", False) and\
               self.hass.states.get("alarm.changeable_state").state is not None\
                 and not update_neccessary:
+            self.logger.debug("Not updating state, updating is deemed unnecessary.")
             return
         self.current_state = temp_state
         self.hass.states.set("alarm.changeable_state", self.current_state)
+        self.logger.debug("Successfully updated alarm state to %s, fetched from REST API.", self.current_state)
 
         
     
@@ -113,8 +117,10 @@ class VisonicPanel(AlarmControlPanelEntity):
 
     def alarm_disarm(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
+            self.logger.debug("Queuing Disarm action, user code was valid.")
             self.hass.bus.fire("visonic.disarm")
             def func():
+                self.logger.debug("Running queued Disarm action.")
                 self.api.arm("DISARM")
                 for i in range(1,10):
                     Timer(i,self.updateStatus).start()
@@ -122,11 +128,14 @@ class VisonicPanel(AlarmControlPanelEntity):
             self.api.continue_func = func
         else:
             self.hass.bus.fire("visonic.invalid_code")
+            self.logger.debug("Disarm action was not queued, user code was invalid.")
             
     def alarm_arm_home(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
+            self.logger.debug("Queuing Arm Home action, user code was valid.")
             self.hass.bus.fire("visonic.arm_home")
             def func():
+                self.logger.debug("Running queued Arm Home action.")
                 self.api.arm("HOME")
                 for i in range(1,10):
                     Timer(i,self.updateStatus).start()
@@ -135,11 +144,14 @@ class VisonicPanel(AlarmControlPanelEntity):
             self.api.continue_func = func
         else:
             self.hass.bus.fire("visonic.invalid_code")
+            self.logger.debug("Arm Home action was not queued, user code was invalid.")
             
     def alarm_arm_away(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
+            self.logger.debug("Queuing Arm Away action, user code was valid.")
             self.hass.bus.fire("visonic.arm_away")
             def func():
+                self.logger.debug("Running queued Arm Away action.")
                 self.api.arm("AWAY")
                 for i in range(1,10):
                     Timer(i,self.updateStatus).start()
@@ -148,11 +160,15 @@ class VisonicPanel(AlarmControlPanelEntity):
             self.api.continue_func = func
         else:
             self.hass.bus.fire("visonic.invalid_code")
+            self.logger.debug("Arm Away action was not queued, user code was invalid.")
     
     def alarm_arm_vacation(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
+            self.logger.debug("Queuing Arm Vacation action, user code was valid.")
             self.hass.bus.fire("visonic.arm_vacation")
             def func():
+                self.logger.debug("Running queued Arm Vacation action.")
+                self.logger.debug("Arming Vacation, this will Arm the panel in Away mode, but will show as vacation in the UI.")
                 self.api.arm("AWAY")
                 for i in range(1,10):
                     Timer(i,self.updateStatus).start()
@@ -161,8 +177,11 @@ class VisonicPanel(AlarmControlPanelEntity):
             self.api.continue_func = func
         else:
             self.hass.bus.fire("visonic.invalid_code")
+            self.logger.debug("Arm Vacation action was not queued, user code was invalid.")
+            
     
     def alarm_trigger(self, code) -> None:
+        self.logger.debug("Triggering siren from alarm control panel entity object.")
         self.api.trigger()
 
 async def async_setup_entry(hass, entry, async_add_entities):

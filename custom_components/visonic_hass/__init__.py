@@ -11,10 +11,12 @@ from homeassistant.helpers.entity_registry import async_get # type: ignore
 from datetime import timedelta
 from homeassistant.helpers.event import async_track_time_interval # type: ignore
 
-_LOGGER = logging.getLogger(DOMAIN)
+_LOGGER = logging.getLogger(__name__)
 
 async def updateHandler(call):
     try:
+        _LOGGER.debug("Updating visonic panel from request.")
+        
         await _api.fetchDevicesAsync()
         for entity in _api.entities:
             if type(entity).__name__ == "VisonicPanel":
@@ -54,6 +56,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Placeholder for YAML setup. Not used."""
     global _hass
     _hass = hass
+    _LOGGER.debug("Setting up visonic alarm integration")
     hass.services.async_register(DOMAIN, "update", updateHandler)
     hass.services.async_register(DOMAIN, "trigger_siren", triggerSirenHandler)
     hass.services.async_register(DOMAIN, "mute_siren", muteSirenHandler)
