@@ -117,8 +117,6 @@ class VisonicPanel(AlarmControlPanelEntity):
 
     def alarm_disarm(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
-            self.logger.debug("Queuing Disarm action, user code was valid.")
-            self.hass.bus.fire("visonic.disarm")
             def func():
                 self.logger.debug("Running queued Disarm action.")
                 self.api.arm("DISARM")
@@ -126,14 +124,14 @@ class VisonicPanel(AlarmControlPanelEntity):
                     Timer(i,self.updateStatus).start()
                 self.armed_vacation = False
             self.api.continue_func = func
+            self.hass.bus.fire("visonic.disarm")
+            self.logger.debug("Queuing Disarm action, user code was valid.")
         else:
             self.hass.bus.fire("visonic.invalid_code")
             self.logger.debug("Disarm action was not queued, user code was invalid.")
             
     def alarm_arm_home(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
-            self.logger.debug("Queuing Arm Home action, user code was valid.")
-            self.hass.bus.fire("visonic.arm_home")
             def func():
                 self.logger.debug("Running queued Arm Home action.")
                 self.api.arm("HOME")
@@ -142,14 +140,14 @@ class VisonicPanel(AlarmControlPanelEntity):
                 Timer(62,self.updateStatus).start()
                 self.armed_vacation = False
             self.api.continue_func = func
+            self.hass.bus.fire("visonic.arm_home")
+            self.logger.debug("Queuing Arm Home action, user code was valid.")
         else:
             self.hass.bus.fire("visonic.invalid_code")
             self.logger.debug("Arm Home action was not queued, user code was invalid.")
             
     def alarm_arm_away(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
-            self.logger.debug("Queuing Arm Away action, user code was valid.")
-            self.hass.bus.fire("visonic.arm_away")
             def func():
                 self.logger.debug("Running queued Arm Away action.")
                 self.api.arm("AWAY")
@@ -158,14 +156,14 @@ class VisonicPanel(AlarmControlPanelEntity):
                 Timer(62,self.updateStatus).start()
                 self.armed_vacation = False
             self.api.continue_func = func
+            self.hass.bus.fire("visonic.arm_away")
+            self.logger.debug("Queuing Arm Away action, user code was valid.")
         else:
             self.hass.bus.fire("visonic.invalid_code")
             self.logger.debug("Arm Away action was not queued, user code was invalid.")
     
     def alarm_arm_vacation(self, code) -> None:
         if hashlib.sha256(str(code).encode()).hexdigest() in self.secrets:
-            self.logger.debug("Queuing Arm Vacation action, user code was valid.")
-            self.hass.bus.fire("visonic.arm_vacation")
             def func():
                 self.logger.debug("Running queued Arm Vacation action.")
                 self.logger.debug("Arming Vacation, this will Arm the panel in Away mode, but will show as vacation in the UI.")
@@ -175,6 +173,8 @@ class VisonicPanel(AlarmControlPanelEntity):
                 Timer(62,self.updateStatus).start()
                 self.armed_vacation = True
             self.api.continue_func = func
+            self.hass.bus.fire("visonic.arm_vacation")
+            self.logger.debug("Queuing Arm Vacation action, user code was valid.")
         else:
             self.hass.bus.fire("visonic.invalid_code")
             self.logger.debug("Arm Vacation action was not queued, user code was invalid.")
