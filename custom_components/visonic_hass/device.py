@@ -28,7 +28,8 @@ types = {
     'SHOCK_CONTACT_AUX_ANTIMASK': DeviceType.SHOCK,
     'MOTION_CAMERA': DeviceType.CAMERA,
     'PROXIMITY_KEYPAD': DeviceType.KEYPAD,
-    'POWER_LINK': DeviceType.IGNORE
+    'POWER_LINK': DeviceType.IGNORE,
+    'MC303_VANISH': DeviceType.MAGNETIC
 }
 
 class Device:
@@ -42,11 +43,11 @@ class Device:
     def __init__(self, device_type, name, bypass, warnings, _id):
         self.visonic_id = _id
         if name == "":
-            self.name = device_type if types[device_type] is None else types[device_type].value
+            self.name = device_type if types.get(device_type, None) is None else types[device_type].value
             self.hasName = False
         else: 
             self.name = name
-        self.device_type = types[device_type]
+        self.device_type = types.get(device_type,None)
         self.bypass = bypass
         self._warnings = warnings
     

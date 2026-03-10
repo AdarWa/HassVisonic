@@ -191,7 +191,11 @@ class API:
                 if "traits" in device.keys():
                     if "bypass" in device["traits"].keys():
                         bypassed = device["traits"]["bypass"]["enabled"]
-                temp.append(Device(device["subtype"], device["name"], bypassed, device["warnings"], str(device["id"])))
+                d = Device(device["subtype"], device["name"], bypassed, device["warnings"], str(device["id"]))
+                if d.device_type is not None:
+                    temp.append(d)
+                else:
+                    self.logger.warning(f"Found unsupported device of type {device["subtype"]}")
                 
             if len(temp) > 0:
                 self.devices = temp
