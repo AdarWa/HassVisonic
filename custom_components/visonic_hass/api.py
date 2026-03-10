@@ -29,7 +29,7 @@ class API:
             self.s.headers.update({'Content-Type': 'application/json'})  
             self.logger.debug("Initialized REST API session with hostname: %s", self.hostname)
         except Exception as e:
-            self.logger.fatal("Exception occured while initializing the REST API: " + str(e.message))
+            self.logger.fatal("Exception occured while initializing the REST API: " + str(e))
         self.devices = []
         
     async def initAsync(self):
@@ -100,16 +100,16 @@ class API:
             self.logger.debug("Successfully obtained user and session tokens.")
             return user, session
         except re.HTTPError as e:
-            self.logger.fatal(type(e).__name__ + " HTTP Error while obtaining tokens. Error Message: " + str(e.message))
+            self.logger.fatal(type(e).__name__ + " HTTP Error while obtaining tokens. Error Message: " + str(e))
             return None, None
         except re.ConnectionError as e:
-            self.logger.fatal(type(e).__name__ + " Connection Error while obtaining tokens. Error Message: " + str(e.message))
+            self.logger.fatal(type(e).__name__ + " Connection Error while obtaining tokens. Error Message: " + str(e))
             return None, None
         except re.Timeout as e:
-            self.logger.fatal(type(e).__name__ + " Timeout while obtaining tokens. Error Message: " + str(e.message))
+            self.logger.fatal(type(e).__name__ + " Timeout while obtaining tokens. Error Message: " + str(e))
             return None, None
         except re.RequestException as e:
-            self.logger.fatal(type(e).__name__ + " Request Exception while obtaining tokens. Error Message: " + str(e.message))
+            self.logger.fatal(type(e).__name__ + " Request Exception while obtaining tokens. Error Message: " + str(e))
             return None, None
         
     
@@ -196,7 +196,7 @@ class API:
             if len(temp) > 0:
                 self.devices = temp
         except Exception as e:
-            self.logger.fatal(type(e).__name__ + " occured while fetching devices. " + str(e.message))
+            self.logger.fatal(type(e).__name__ + " occured while fetching devices. " + str(e))
             
     def fetchState(self) -> dict:
         try:
@@ -212,6 +212,6 @@ class API:
                     self.logger.fatal("No partitions found in response from status API endpoint.")
                     return None
         except Exception as e:
-            self.logger.fatal(type(e).__name__ + "occured while fetching state of panel. " + str(e.message))
+            self.logger.fatal(type(e).__name__ + "occured while fetching state of panel. " + str(e))
     
         
