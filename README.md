@@ -1,4 +1,11 @@
 # Visonic PowerLink Home Assistant Integration
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow)](https://www.buymeacoffee.com/AdarWa)
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/AdarWa)
+
+> ⭐ **If you find this useful, please consider giving it a star on GitHub!**  
+> It helps others discover the project and supports future development.
+
 
 This is a custom Home Assistant integration for Visonic alarm systems using the **Visonic PowerLink** REST API. It provides access to alarm panel information and connected sensors, while optionally supporting fast and offline sensor state updates via **RS232-to-TCP converters** like the USR-TCP232-T2.
 
