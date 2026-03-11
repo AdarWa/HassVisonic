@@ -71,7 +71,7 @@ class VisonicPanel(AlarmControlPanelEntity):
         elif state == "ENTRY_DELAY":
             temp_state = "Entry Delay"
 
-        if last_update is not None:
+        if last_update is not None and str(last_update).strip().lower() != "none":
             last_update = float(last_update)
             if time.time() - last_update < 90:
                 update_neccessary = False
